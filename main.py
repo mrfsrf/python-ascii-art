@@ -20,7 +20,7 @@ def draw_ascii_img(w, h, file_name, ascii_str):
     ascii_img_width = int(round(w * char_width))
     ascii_img_height = int(round(h * char_height))
 
-    ascii_img = Image.new("L", (ascii_img_width, ascii_img_height))
+    ascii_img = Image.new("L", (ascii_img_width, ascii_img_height), 255)
     draw = ImageDraw.Draw(ascii_img)
 
     x, y = 0, 0
@@ -29,7 +29,7 @@ def draw_ascii_img(w, h, file_name, ascii_str):
             x = 0             # Reset X
             y += char_height  # Move to next line
         else:
-            draw.text((x, y), char, fill=255, font=FONT)
+            draw.text((x, y), char, fill=0, font=FONT)
             x += char_width
 
     ascii_img.save(f"{file_name}-ascii.png")
@@ -83,7 +83,7 @@ def main():
 
         print(f"ASCII art saved to {txt_file}.")
 
-    except IOError as e:
+    except (IOError, OSError) as e:
         print("Something went wrong:", e)
 
 
