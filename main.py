@@ -1,3 +1,4 @@
+from sys import argv
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # Constants
@@ -14,7 +15,7 @@ ascent, descent = FONT.getmetrics()  # Get the height of a character
 CHAR_HEIGHT = ascent + descent
 
 
-def gen_ascii(pixels, new_width, file, ascii_chars):
+def gen_ascii(pixels, w, file, ascii_chars):
     """
     ...
     """
@@ -24,7 +25,7 @@ def gen_ascii(pixels, new_width, file, ascii_chars):
         ascii_str += ascii_chars[min(
             pixel // (255 // (len(ascii_chars) - 1)),
             len(ascii_chars) - 1)]
-        if (i + 1) % new_width == 0:
+        if (i + 1) % w == 0:
             ascii_str += '\n'
 
     txt_file = f"{file}-ascii.txt"
@@ -63,13 +64,24 @@ def main():
     Function that generates ascii from input image
     ----------------------------------------------------------------
     TODO:
-        - Add Sequences on img gen to create ascii animation
+        - Add Sequences on img gen to create ascii animation (ascii image)
+        - Test with Numpy for better performace and for image analysis
+        - Introduce palette for RGB/color images to get better results
     """
 
     try:
-        file = input("Enter the path including filename with extension: ")
-        file_name = file.rsplit(".")[0]
+        file_input = argv[1:]
+        file = None
+        if not file_input:
+            print("Please provide a filename with path as an argument")
+            exit()
+        elif len(file_input) > 1:
+            print("Please provide single file including the path to the file")
+            exit()
+        else:
+            file = file_input[0]
 
+        file_name = file.split(".", maxsplit=1)[0]
         image = Image.open(file)
         # Default to grayscale set if mode is not foun
         ascii_chars = ASCII_CHAR_MODES.get(image.mode, ASCII_CHAR_MODES["L"])
@@ -88,12 +100,10 @@ def main():
         # modify image
         modified_img = resized_img.filter(ImageFilter.DETAIL)
         modified_img = modified_img.filter(ImageFilter.SHARPEN)
-        # modified_img.save("temp.png")
-        # -------- end
+        # --------
         pixels = modified_img.getdata()
 
         ascii_str = gen_ascii(pixels, new_width, file_name, ascii_chars)
-
         draw_ascii_img(new_width, new_height, file_name, ascii_str)
 
     except (IOError, OSError) as e:
