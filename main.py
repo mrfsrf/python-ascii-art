@@ -1,11 +1,11 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # Constants
 FONT = ImageFont.truetype("nerd_font.ttf", 10)
 ASPECT_RATIO = 0.5
 ASCII_CHAR_MODES = {
-    "1": "@%#*+=-:. ",
-    "L": None,  # Temporary placeholder
+    "1": "@%#*+=-:. ",  # Bitmap
+    "L": None,          # Grayscale
     "RGB": "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
 }
 ASCII_CHAR_MODES["L"] = ASCII_CHAR_MODES["RGB"]
@@ -63,7 +63,6 @@ def main():
     Function that generates ascii from input image
     ----------------------------------------------------------------
     TODO:
-        - Retouch image using filters to generate more quality ascii
         - Add Sequences on img gen to create ascii animation
     """
 
@@ -86,7 +85,12 @@ def main():
                          (new_width / orig_width))
 
         resized_img = gray_img.resize((new_width, new_height))
-        pixels = resized_img.getdata()
+        # modify image
+        modified_img = resized_img.filter(ImageFilter.DETAIL)
+        modified_img = modified_img.filter(ImageFilter.SHARPEN)
+        # modified_img.save("temp.png")
+        # -------- end
+        pixels = modified_img.getdata()
 
         ascii_str = gen_ascii(pixels, new_width, file_name, ascii_chars)
 
