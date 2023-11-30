@@ -4,16 +4,16 @@ import numpy as np
 
 # Constants
 FONT = ImageFont.truetype("nerd_font.ttf", 10)
-ASPECT_RATIO = 0.5
+CHAR_WIDTH = FONT.getlength("W")     # Get the width of a single character
+ascent, descent = FONT.getmetrics()  # Get the height of a character
+CHAR_HEIGHT = ascent + descent
+ASPECT_RATIO = CHAR_WIDTH / CHAR_HEIGHT
 ASCII_CHAR_MODES = {
     "1": "@%#*+=-:. ",  # Bitmap
     "L": None,          # Grayscale
     "RGB": "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
 }
 ASCII_CHAR_MODES["L"] = ASCII_CHAR_MODES["RGB"]
-CHAR_WIDTH = FONT.getlength("W")     # Get the width of a single character
-ascent, descent = FONT.getmetrics()  # Get the height of a character
-CHAR_HEIGHT = ascent + descent
 
 
 def evaulate_img(img):
@@ -26,7 +26,6 @@ def evaulate_img(img):
     # Weighted avg
     average = np.sum(histogram_np * intensity_np) // np.sum(histogram_np)
 
-    print(f"Average histogram: {average}")
     if average < 60:  # Underexposed
         # Apply 'normalize' filters
         modified_img = img
@@ -37,7 +36,7 @@ def evaulate_img(img):
         # Default filters
         # No Chain of fools possible in Pillow?
         modified_img = img.filter(ImageFilter.DETAIL)
-        modified_img = img.filter(ImageFilter.SHARPEN)
+        modified_img = modified_img.filter(ImageFilter.SHARPEN)
 
     return modified_img
 
@@ -115,15 +114,14 @@ def main():
         gray_img = image.convert("L")
 
         orig_width, orig_height = gray_img.size
-        new_width = int(orig_width * ASPECT_RATIO)
-        # new_height = int(orig_height * ASPECT_RATIO)
-        # Squash image verticaly.
-        # Adjusting the height calculation has improved the appearance
-        # of ASCII art probably due to the font
-        new_height = int((ASPECT_RATIO * orig_height) *
-                         (new_width / orig_width))
+        # Font thingy
+        new_height = int(orig_height * ASPECT_RATIO)
 
+        new_width = int(orig_width * 0.5)
+        new_height = int(new_height * 0.5)
+        # Resize the image
         resized_img = gray_img.resize((new_width, new_height))
+
         modified_img = evaulate_img(resized_img)
 
         pixels = modified_img.getdata()
