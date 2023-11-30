@@ -1,5 +1,6 @@
 from sys import argv
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+import numpy as np
 
 # Constants
 FONT = ImageFont.truetype("nerd_font.ttf", 10)
@@ -13,6 +14,32 @@ ASCII_CHAR_MODES["L"] = ASCII_CHAR_MODES["RGB"]
 CHAR_WIDTH = FONT.getlength("W")     # Get the width of a single character
 ascent, descent = FONT.getmetrics()  # Get the height of a character
 CHAR_HEIGHT = ascent + descent
+
+
+def evaulate_img(img):
+    """
+    Image analysis. Evaulating if image is
+    'overexposed' or 'underexposed'
+    """
+    histogram_np = np.array(img.histogram())
+    intensity_np = np.arange(len(histogram_np))
+    # Weighted avg
+    average = np.sum(histogram_np * intensity_np) // np.sum(histogram_np)
+
+    print(f"Average histogram: {average}")
+    if average < 60:  # Underexposed
+        # Apply 'normalize' filters
+        modified_img = img
+    elif average > 190:  # Overexposed
+        # Apply 'normalize' filters
+        modified_img = img
+    else:
+        # Default filters
+        # No Chain of fools possible in Pillow?
+        modified_img = img.filter(ImageFilter.DETAIL)
+        modified_img = img.filter(ImageFilter.SHARPEN)
+
+    return modified_img
 
 
 def gen_ascii(pixels, w, file, ascii_chars):
@@ -97,10 +124,8 @@ def main():
                          (new_width / orig_width))
 
         resized_img = gray_img.resize((new_width, new_height))
-        # modify image
-        modified_img = resized_img.filter(ImageFilter.DETAIL)
-        modified_img = modified_img.filter(ImageFilter.SHARPEN)
-        # --------
+        modified_img = evaulate_img(resized_img)
+
         pixels = modified_img.getdata()
 
         ascii_str = gen_ascii(pixels, new_width, file_name, ascii_chars)
