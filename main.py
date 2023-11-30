@@ -1,9 +1,9 @@
 from sys import argv
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import numpy as np
 
 # Constants
-FONT = ImageFont.truetype("nerd_font.ttf", 10)
+FONT = ImageFont.truetype("nerd_font.ttf", 40)
 CHAR_WIDTH = FONT.getlength("W")     # Get the width of a single character
 ascent, descent = FONT.getmetrics()  # Get the height of a character
 CHAR_HEIGHT = ascent + descent
@@ -12,7 +12,9 @@ FONT_ASPECT_RATIO = CHAR_WIDTH / CHAR_HEIGHT
 ASCII_CHAR_MODES = {
     "1": "@%#*+=-:. ",  # Bitmap
     "L": None,          # Grayscale
-    "RGB": "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
+    "RGB": (
+        "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
+    )
 }
 ASCII_CHAR_MODES["L"] = ASCII_CHAR_MODES["RGB"]
 
@@ -35,10 +37,16 @@ def evaulate_img(img):
         modified_img = img
     else:
         # Default filters
-        # No Chain of fools possible in Pillow?
-        modified_img = img.filter(ImageFilter.DETAIL)
-        modified_img = modified_img.filter(ImageFilter.SHARPEN)
+        # Nice, chain of fools is possible
+        modified_img = (
+            img.filter(ImageFilter.DETAIL).filter(ImageFilter.SHARPEN)
+        )
+        enh = ImageEnhance.Contrast(modified_img)
+        modified_img = enh.enhance(1.8)
+        # enh = ImageEnhance.Brightness(modified_img)
+        # modified_img = enh.enhance(1.4)
 
+    modified_img.save("./modified-image.jpg")
     return modified_img
 
 
@@ -72,14 +80,14 @@ def draw_ascii_img(w, h, file_name, ascii_str):
     ascii_img = Image.new("L", (ascii_img_width, ascii_img_height), 255)
     draw = ImageDraw.Draw(ascii_img)
 
-    x, y = 0, 0
-    for char in ascii_str:
-        if char == "\n":
-            x = 0             # Reset X
-            y += CHAR_HEIGHT  # Move to next line
-        else:
-            draw.text((x, y), char, fill=0, font=FONT)
-            x += CHAR_WIDTH
+    # Split the ASCII string into lines
+    lines = ascii_str.split("\n")
+
+    # Draw each line
+    y = 0
+    for line in lines:
+        draw.text((0, y), line, fill=0, font=FONT)
+        y += CHAR_HEIGHT
 
     file_name = f"{file_name}-ascii.png"
     ascii_img.save(file_name)
