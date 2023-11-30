@@ -1,9 +1,10 @@
 from sys import argv
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, \
+    ImageOps, ImageEnhance
 import numpy as np
 
 # Constants
-FONT = ImageFont.truetype("nerd_font.ttf", 40)
+FONT = ImageFont.truetype("nerd_font.ttf", 10)
 CHAR_WIDTH = FONT.getlength("W")     # Get the width of a single character
 ascent, descent = FONT.getmetrics()  # Get the height of a character
 CHAR_HEIGHT = ascent + descent
@@ -29,24 +30,31 @@ def evaulate_img(img):
     # Weighted avg
     average = np.sum(histogram_np * intensity_np) // np.sum(histogram_np)
 
-    if average < 60:  # Underexposed
-        # Apply 'normalize' filters
-        modified_img = img
-    elif average > 190:  # Overexposed
-        # Apply 'normalize' filters
-        modified_img = img
+    modified_img = ImageOps.autocontrast(img)
+
+    # Underexposed < 60; Overexposed > 190
+    # Attempt to 'normalize' image
+    if average < 60:
+        print("Image is underexposed")
+        enh = ImageEnhance.Brightness(modified_img)
+        modified_img = enh.enhance(4.0)
+    elif average > 190:
+        print("Image is overexposed")
+        modified_img.show()
+        enh = ImageEnhance.Brightness(modified_img)
+        modified_img = enh.enhance(0.7)
     else:
-        # Default filters
         # Nice, chain of fools is possible
         modified_img = (
-            img.filter(ImageFilter.DETAIL).filter(ImageFilter.SHARPEN)
+            modified_img.filter(ImageFilter.DETAIL)
+            .filter(ImageFilter.SHARPEN)
         )
-        enh = ImageEnhance.Contrast(modified_img)
-        modified_img = enh.enhance(1.8)
-        # enh = ImageEnhance.Brightness(modified_img)
-        # modified_img = enh.enhance(1.4)
+        enh = ImageEnhance.Brightness(modified_img)
+        modified_img = enh.enhance(1.4)
 
-    modified_img.save("./modified-image.jpg")
+    enh = ImageEnhance.Contrast(modified_img)
+    modified_img = enh.enhance(1.8)
+
     return modified_img
 
 
@@ -83,7 +91,6 @@ def draw_ascii_img(w, h, file_name, ascii_str):
     # Split the ASCII string into lines
     lines = ascii_str.split("\n")
 
-    # Draw each line
     y = 0
     for line in lines:
         draw.text((0, y), line, fill=0, font=FONT)
@@ -91,7 +98,7 @@ def draw_ascii_img(w, h, file_name, ascii_str):
 
     file_name = f"{file_name}-ascii.png"
     ascii_img.save(file_name)
-    print(f"ASCII image file saved to {file_name}.")
+    print(f"ASCII image file saved to {file_name}")
 
 
 def main():
@@ -100,8 +107,8 @@ def main():
     ----------------------------------------------------------------
     TODO:
         - Add Sequences on img gen to create ascii animation (ascii image)
-        - Test with Numpy for better performace and for image analysis
         - Introduce palette for RGB/color images to get better results
+        - Also generate color ASCII image
     """
 
     try:
