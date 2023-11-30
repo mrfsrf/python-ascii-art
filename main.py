@@ -7,7 +7,8 @@ FONT = ImageFont.truetype("nerd_font.ttf", 10)
 CHAR_WIDTH = FONT.getlength("W")     # Get the width of a single character
 ascent, descent = FONT.getmetrics()  # Get the height of a character
 CHAR_HEIGHT = ascent + descent
-ASPECT_RATIO = CHAR_WIDTH / CHAR_HEIGHT
+ASPECT_RATIO = 0.5
+FONT_ASPECT_RATIO = CHAR_WIDTH / CHAR_HEIGHT
 ASCII_CHAR_MODES = {
     "1": "@%#*+=-:. ",  # Bitmap
     "L": None,          # Grayscale
@@ -109,16 +110,16 @@ def main():
 
         file_name = file.split(".", maxsplit=1)[0]
         image = Image.open(file)
-        # Default to grayscale set if mode is not foun
+        # Default to grayscale set if mode is not found
         ascii_chars = ASCII_CHAR_MODES.get(image.mode, ASCII_CHAR_MODES["L"])
         gray_img = image.convert("L")
 
         orig_width, orig_height = gray_img.size
         # Font thingy
-        new_height = int(orig_height * ASPECT_RATIO)
+        new_height = int(orig_height * FONT_ASPECT_RATIO)
 
-        new_width = int(orig_width * 0.5)
-        new_height = int(new_height * 0.5)
+        new_width = int(orig_width * ASPECT_RATIO)
+        new_height = int(new_height * ASPECT_RATIO)
         # Resize the image
         resized_img = gray_img.resize((new_width, new_height))
 
