@@ -1,5 +1,7 @@
 # Python ASCII gen using Pillow
 
+![ASCII Image](./image-ascii.png)
+
 #### Todo
   - Add Sequences on img gen to create ascii animation (ascii image)
   ~~- Test with Numpy for better performace and for better image analysis

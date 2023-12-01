@@ -40,7 +40,6 @@ def evaulate_img(img):
         modified_img = enh.enhance(4.0)
     elif average > 190:
         print("Image is overexposed")
-        modified_img.show()
         enh = ImageEnhance.Brightness(modified_img)
         modified_img = enh.enhance(0.7)
     else:
@@ -62,14 +61,14 @@ def gen_ascii(pixels, w, file, ascii_chars):
     """
     ...
     """
-    ascii_str = ''
+    ascii_str = ""
 
     for i, pixel in enumerate(pixels):
         ascii_str += ascii_chars[min(
             pixel // (255 // (len(ascii_chars) - 1)),
             len(ascii_chars) - 1)]
         if (i + 1) % w == 0:
-            ascii_str += '\n'
+            ascii_str += "\n"
 
     txt_file = f"{file}-ascii.txt"
     with open(txt_file, "w", encoding="utf-8") as f:
@@ -135,7 +134,6 @@ def main():
 
         new_width = int(orig_width * ASPECT_RATIO)
         new_height = int(new_height * ASPECT_RATIO)
-        # Resize the image
         resized_img = gray_img.resize((new_width, new_height))
 
         modified_img = evaulate_img(resized_img)
@@ -145,9 +143,9 @@ def main():
         ascii_str = gen_ascii(pixels, new_width, file_name, ascii_chars)
         draw_ascii_img(new_width, new_height, file_name, ascii_str)
 
-    except (IOError, OSError) as e:
+    except OSError as e:
         print("Something went wrong:", e)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
