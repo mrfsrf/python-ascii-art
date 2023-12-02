@@ -3,7 +3,7 @@
 ![ASCII Image](./image-ascii.png)
 
 #### Todo
-  - Add Sequences on img gen to create ascii animation (ascii image)
+  - Also generate statistics about igge input in the form of graphs
   ~~- Test with Numpy for better performace and for better image analysis
     using Pillow histogram~~
   - Introduce palette for RGB/color images to get better results
