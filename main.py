@@ -1,8 +1,11 @@
 from sys import argv
 from pathlib import Path
+import io
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, \
     ImageOps, ImageEnhance
+import matplotlib.pyplot as plt
 import numpy as np
+
 
 # Constants
 FONT = ImageFont.truetype("nerd_font.ttf", 10)
@@ -46,7 +49,8 @@ def evaulate_img(img):
     else:
         # Nice, chain of fools is possible
         modified_img = (
-            modified_img.filter(ImageFilter.DETAIL)
+            modified_img
+            .filter(ImageFilter.DETAIL)
             .filter(ImageFilter.SHARPEN)
         )
         enh = ImageEnhance.Brightness(modified_img)
@@ -56,6 +60,30 @@ def evaulate_img(img):
     modified_img = enh.enhance(1.8)
 
     return modified_img
+
+
+def gen_img_statistic(original_image, ascii_img):
+
+    new_width = ((((ascii_img.width // 2)) // 2) - 30) // 96
+    new_height = ((((ascii_img.height // 2)) // 2) - 30) // 96
+
+    orig_img_hist = original_image.histogram()
+
+    # 1. Histogram
+    plt.figure(figsize=(new_width, new_height))
+    plt.bar(range(256), orig_img_hist, color='black')
+    plt.title('Image Histogram')
+    plt.xlabel('Pixel Value')
+    plt.ylabel('Frequency')
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    chart_img = Image.open(buf)
+
+    ascii_img.paste(chart_img, (30, 30), chart_img)
+    ascii_img.show()
 
 
 def ascii_version_path(file_input, ext):
@@ -82,7 +110,7 @@ def gen_ascii(pixels, w, file, ascii_chars):
 
     with open(text_file, "w", encoding="utf-8") as f:
         f.write(ascii_str)
-    print(f"ASCII text file saved to {text_file}.")
+    print(f"ASCII text file saved to {text_file}")
 
     return ascii_str
 
@@ -109,6 +137,8 @@ def draw_ascii_img(w, h, file, ascii_str):
     ascii_img.show()
     ascii_img.save(img_file)
     print(f"ASCII image file saved to {img_file}")
+
+    return ascii_img
 
 
 def main():
@@ -146,7 +176,8 @@ def main():
         pixels = modified_img.getdata()
 
         ascii_str = gen_ascii(pixels, new_width, file, ascii_chars)
-        draw_ascii_img(new_width, new_height, file, ascii_str)
+        ascii_img = draw_ascii_img(new_width, new_height, file, ascii_str)
+        gen_img_statistic(resized_img, ascii_img)
 
     except OSError as e:
         print(e)
