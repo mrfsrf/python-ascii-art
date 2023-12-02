@@ -1,4 +1,5 @@
 from sys import argv
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, \
     ImageOps, ImageEnhance
 import numpy as np
@@ -57,6 +58,13 @@ def evaulate_img(img):
     return modified_img
 
 
+def ascii_version_path(file_input, ext):
+    file_path = Path(file_input)
+    file_basename = f"{file_path.stem}-ascii.{ext}"
+
+    return f"{file_path.parent}/{file_basename}"
+
+
 def gen_ascii(pixels, w, file, ascii_chars):
     """
     ...
@@ -70,15 +78,16 @@ def gen_ascii(pixels, w, file, ascii_chars):
         if (i + 1) % w == 0:
             ascii_str += "\n"
 
-    txt_file = f"{file}-ascii.txt"
-    with open(txt_file, "w", encoding="utf-8") as f:
+    text_file = ascii_version_path(file, "txt")
+
+    with open(text_file, "w", encoding="utf-8") as f:
         f.write(ascii_str)
-    print(f"ASCII text file saved to {txt_file}.")
+    print(f"ASCII text file saved to {text_file}.")
 
     return ascii_str
 
 
-def draw_ascii_img(w, h, file_name, ascii_str):
+def draw_ascii_img(w, h, file, ascii_str):
     """
     Draw and save ASCII image
     """
@@ -95,19 +104,16 @@ def draw_ascii_img(w, h, file_name, ascii_str):
         draw.text((0, y), line, fill=0, font=FONT)
         y += CHAR_HEIGHT
 
-    file_name = f"{file_name}-ascii.png"
-    ascii_img.save(file_name)
-    print(f"ASCII image file saved to {file_name}")
+    img_file = ascii_version_path(file, "png")
+
+    ascii_img.show()
+    ascii_img.save(img_file)
+    print(f"ASCII image file saved to {img_file}")
 
 
 def main():
     """
     Function that generates ascii from input image
-    ----------------------------------------------------------------
-    TODO:
-        - Add Sequences on img gen to create ascii animation (ascii image)
-        - Introduce palette for RGB/color images to get better results
-        - Also generate color ASCII image
     """
 
     try:
@@ -122,7 +128,6 @@ def main():
         else:
             file = file_input[0]
 
-        file_name = file.split(".", maxsplit=1)[0]
         image = Image.open(file)
         # Default to grayscale set if mode is not found
         ascii_chars = ASCII_CHAR_MODES.get(image.mode, ASCII_CHAR_MODES["L"])
@@ -140,11 +145,11 @@ def main():
 
         pixels = modified_img.getdata()
 
-        ascii_str = gen_ascii(pixels, new_width, file_name, ascii_chars)
-        draw_ascii_img(new_width, new_height, file_name, ascii_str)
+        ascii_str = gen_ascii(pixels, new_width, file, ascii_chars)
+        draw_ascii_img(new_width, new_height, file, ascii_str)
 
     except OSError as e:
-        print("Something went wrong:", e)
+        print(e)
 
 
 if __name__ == "__main__":
