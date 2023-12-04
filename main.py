@@ -1,10 +1,9 @@
-from ascii_statistics import gen_img_statistic
 from sys import argv
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, \
     ImageOps, ImageEnhance
 import numpy as np
-
+from ascii_statistics import gen_img_statistic
 
 # Constants
 FONT = ImageFont.truetype("nerd_font.ttf", 10)
@@ -14,13 +13,14 @@ CHAR_HEIGHT = ascent + descent
 ASPECT_RATIO = 0.5
 FONT_ASPECT_RATIO = CHAR_WIDTH / CHAR_HEIGHT
 ASCII_CHAR_MODES = {
-    "1": "@%#*+=-:. ",  # Bitmap
-    "L": None,          # Grayscale
+    "1": "@%#*+=-:. ",
+    "L": (
+        "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
+    ),
     "RGB": (
         "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,^`'."
     )
 }
-ASCII_CHAR_MODES["L"] = ASCII_CHAR_MODES["RGB"]
 
 
 def evaulate_img(img):
@@ -121,42 +121,41 @@ def main():
     Function that generates ascii from input image
     """
 
-    try:
-        file_input = argv[1:]
-        file = None
-        if not file_input:
-            print("Please provide a filename with path as an argument")
-            exit()
-        elif len(file_input) > 1:
-            print("Please provide single file including the path to the file")
-            exit()
-        else:
-            file = file_input[0]
+    file_input = argv[1:]
+    file = None
+    if not file_input:
+        print("Please provide a filename with path as an argument")
+        exit()
+    elif len(file_input) > 1:
+        print("Please provide single file including the path to the file")
+        exit()
+    else:
+        file = file_input[0]
 
-        image = Image.open(file)
-        # Default to grayscale set if mode is not found
-        ascii_chars = ASCII_CHAR_MODES.get(image.mode, ASCII_CHAR_MODES["L"])
-        gray_img = image.convert("L")
+    image = Image.open(file)
+    # Default to grayscale set if mode is not found
+    ascii_chars = ASCII_CHAR_MODES.get(image.mode, ASCII_CHAR_MODES["L"])
+    gray_img = image.convert("L")
 
-        orig_width, orig_height = gray_img.size
-        # Font thingy
-        new_height = int(orig_height * FONT_ASPECT_RATIO)
+    orig_width, orig_height = gray_img.size
+    # Font thingy
+    new_height = int(orig_height * FONT_ASPECT_RATIO)
 
-        new_width = int(orig_width * ASPECT_RATIO)
-        new_height = int(new_height * ASPECT_RATIO)
-        resized_img = gray_img.resize((new_width, new_height))
+    new_width = int(orig_width * ASPECT_RATIO)
+    new_height = int(new_height * ASPECT_RATIO)
+    resized_img = gray_img.resize((new_width, new_height))
 
-        modified_img = evaulate_img(resized_img)
+    modified_img = evaulate_img(resized_img)
 
-        pixels = modified_img.getdata()
+    pixels = modified_img.getdata()
 
-        ascii_str = gen_ascii(pixels, new_width, file, ascii_chars)
-        ascii_img = draw_ascii_img(new_width, new_height, file, ascii_str)
-        gen_img_statistic(resized_img, ascii_img)
-
-    except OSError as e:
-        print(e)
+    ascii_str = gen_ascii(pixels, new_width, file, ascii_chars)
+    ascii_img = draw_ascii_img(new_width, new_height, file, ascii_str)
+    gen_img_statistic(resized_img, ascii_img)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except OSError as e:
+        print(e)

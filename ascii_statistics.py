@@ -6,11 +6,12 @@ import numpy as np
 
 def gen_img_statistic(original_image, ascii_img):
     MARGIN = 30
-    # Draw text with copy
     ascii_img_c = ascii_img.crop(
         (0, 0, ascii_img.width // 2, ascii_img.height))
-    font = ImageFont.truetype("nerd_font.ttf", 30)
     draw = ImageDraw.Draw(ascii_img_c)
+
+    # Draw text with copy
+    font = ImageFont.truetype("nerd_font.ttf", 30)
     txt = "Hide the pain Harold"
     # Get the bounding box of the text i.e. (0, 4, 324, 29)
     _, _, bbx, bby = draw.textbbox((0, 0), txt, font=font)
