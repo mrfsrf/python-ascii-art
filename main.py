@@ -1,9 +1,8 @@
+from ascii_statistics import gen_img_statistic
 from sys import argv
 from pathlib import Path
-import io
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, \
     ImageOps, ImageEnhance
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -62,30 +61,6 @@ def evaulate_img(img):
     return modified_img
 
 
-def gen_img_statistic(original_image, ascii_img):
-
-    new_width = ((((ascii_img.width // 2)) // 2) - 30) // 96
-    new_height = ((((ascii_img.height // 2)) // 2) - 30) // 96
-
-    orig_img_hist = original_image.histogram()
-
-    # 1. Histogram
-    plt.figure(figsize=(new_width, new_height))
-    plt.bar(range(256), orig_img_hist, color='black')
-    plt.title('Image Histogram')
-    plt.xlabel('Pixel Value')
-    plt.ylabel('Frequency')
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-
-    chart_img = Image.open(buf)
-
-    ascii_img.paste(chart_img, (30, 30), chart_img)
-    ascii_img.show()
-
-
 def ascii_version_path(file_input, ext):
     file_path = Path(file_input)
     file_basename = f"{file_path.stem}-ascii.{ext}"
@@ -95,7 +70,8 @@ def ascii_version_path(file_input, ext):
 
 def gen_ascii(pixels, w, file, ascii_chars):
     """
-    ...
+    ::::;,,;^;,,,,,,,,,,,,,,,,,,,,,`^^^^^^^^^^^^^^^^,````````````````````:,I
+    .........;]-[l+<-.~,<i;]_}zY-)\_!..'......^I.:......;I^^.`^'''''''''''''
     """
     ascii_str = ""
 
@@ -124,7 +100,6 @@ def draw_ascii_img(w, h, file, ascii_str):
     ascii_img = Image.new("L", (ascii_img_width, ascii_img_height), 255)
     draw = ImageDraw.Draw(ascii_img)
 
-    # Split the ASCII string into lines
     lines = ascii_str.split("\n")
 
     y = 0
